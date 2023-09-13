@@ -75,32 +75,31 @@ fn set_color(color: [u32; 3], mode: &str) {
         .unwrap();
 }
 
-fn get_screen_average(ignore_black: bool) -> Option<[u32; 3]> {
-    match x11_screenshot::Screen::open() {
-        Some(screen) => {
-            let pixel_values = screen
-                .capture()
-                .unwrap()
-                .pixels()
-                .map(|p| p.0.map(|v| v as u32))
-                .collect::<Vec<[u32; 3]>>();
-            let mut sum = [0, 0, 0];
-            let mut pixel_count = 0;
-            for pix in pixel_values {
-                if !ignore_black || (pix != [0, 0, 0]) {
-                    pixel_count += 1;
-                    for i in 0..3 {
-                        sum[i] += pix[i];
-                    }
-                }
+fn get_screen_average(ignore_black: bool) -> Result<[u32; 3], Box<dyn Error>> {
+    let pixel_values = screenshots::Screen::all()?[0]
+        .capture()
+        .unwrap()
+        .pixels()
+        .map(|p| p.0.map(|v| v as u32))
+        .collect::<Vec<[u32; 4]>>();
+    let mut sum = [0, 0, 0];
+    let mut pixel_count = 0;
+    for pix in pixel_values {
+        if !ignore_black || !pix.starts_with(&[0, 0, 0]) {
+            pixel_count += 1;
+            for i in 0..3 {
+                sum[i] += pix[i];
             }
-
-            return Some([
-                sum[0] / pixel_count,
-                sum[1] / pixel_count,
-                sum[2] / pixel_count,
-            ]);
         }
-        _ => None,
     }
+
+    if pixel_count == 0 {
+        return Ok([0, 0, 0]);
+    }
+
+    return Ok([
+        sum[0] / pixel_count,
+        sum[1] / pixel_count,
+        sum[2] / pixel_count,
+    ]);
 }
