@@ -66,13 +66,16 @@ Command Options:
 }
 
 fn set_color(color: [u32; 3], mode: &str) {
-    process::Command::new("asusctl")
+    match process::Command::new("asusctl")
         .arg("led-mode")
         .arg(mode)
         .arg("-c")
         .arg(color.map(|val| format!("{:02x}", val)).join(""))
         .spawn()
-        .unwrap();
+    {
+        Ok(_) => {}
+        Err(e) => println!("Error running asusctl:\n{}", e),
+    };
 }
 
 fn get_screen_average(ignore_black: bool) -> Result<[u32; 3], Box<dyn Error>> {
