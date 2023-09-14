@@ -16,7 +16,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 Command Options:
 
 -d / --delay <milliseconds>   : Time between changing colors in milliseconds (default: 50)
--i / --ignore-black <bool>    : Ignore black pixels when calculating average (default: false)
+-i / --ignore-black           : Ignore black pixels when calculating the average color
 -b / --brightness <number>    : Brightness multiplier (default: 1)
 -m / --mode <mode>            : Led mode; static, breathe, pulse (default: static)
 "
@@ -30,10 +30,7 @@ Command Options:
                     .parse::<u64>()?;
             }
             "-i" | "--ignore-black" => {
-                ignore_black = args
-                    .next()
-                    .ok_or("Missing ignore-black argument")?
-                    .parse::<bool>()?;
+                ignore_black = true;
             }
             "-b" | "--brightness" => {
                 brightness_factor = args
